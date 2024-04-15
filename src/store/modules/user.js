@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { request } from "@/utils";
+import { removeToken, request } from "@/utils";
 import { setToken as _setToken, getToken } from "@/utils";
 
 const userStore = createSlice({
@@ -7,6 +7,7 @@ const userStore = createSlice({
   initialState: {
     //数据状态
     token: getToken() || "",
+    userInfo: {},
   },
   //同步修改方法
   reducers: {
@@ -15,11 +16,19 @@ const userStore = createSlice({
       //存入本地
       _setToken(action.payload);
     },
+    setUserInfo(state, action) {
+      state.userInfo = action.payload;
+    },
+    clearUserInfo(state) {
+      state.token = "";
+      state.userInfo = {};
+      removeToken();
+    },
   },
 });
 
 //解构actionCreater
-const { setToken } = userStore.actions;
+const { setToken, setUserInfo, clearUserInfo } = userStore.actions;
 //获取reducer函数
 const userReducer = userStore.reducer;
 
@@ -33,5 +42,13 @@ const fetchLogin = (loginForm) => {
   };
 };
 
-export { fetchLogin, setToken };
+//获取用户信息
+const fetchUserInfo = () => {
+  return async (dispatch) => {
+    const res = await request.get("/user/profile");
+    dispatch(setUserInfo(res.data));
+  };
+};
+
+export { fetchLogin, fetchUserInfo, clearUserInfo };
 export default userReducer;
