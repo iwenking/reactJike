@@ -16,6 +16,7 @@ import "react-quill/dist/quill.snow.css";
 import "./index.scss";
 import { getChannelAPI, createArticleAPI } from "@/apis/article";
 import { useEffect, useState } from "react";
+import { message } from "antd";
 
 const { Option } = Select;
 
@@ -34,13 +35,17 @@ const Publish = () => {
 
   //提交表单
   const onFinish = async (values) => {
+    //校验封面类型imagesType是否和实际的图片列表imageList长度一致
+    if (imageList.length !== imageType)
+      return message.warning("封面类型和图片数量不匹配");
+
     const { title, content, channel_id } = values;
     const resData = {
       title,
       content,
       cover: {
-        type: imageType,
-        images: imageList,
+        type: imageType, //封面模式
+        images: imageList.map((item) => item.response.data.url), //封面列表
       },
       channel_id,
     };
