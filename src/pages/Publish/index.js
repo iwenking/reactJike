@@ -14,10 +14,11 @@ import { Link } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./index.scss";
-import { createArticleAPI } from "@/apis/article";
-import { useState } from "react";
+import { createArticleAPI, getArticleDetailAPI } from "@/apis/article";
+import { useState, useEffect } from "react";
 import { message } from "antd";
 import { useChannel } from "@/hooks/useChannel";
+import { useSearchParams } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -53,6 +54,20 @@ const Publish = () => {
   const onTypeChange = (e) => {
     setImageType(e.target.value);
   };
+  //回填数据
+  const [searchParams] = useSearchParams();
+  const articleId = searchParams.get("id");
+  //获取实例
+  const [form] = Form.useForm();
+  console.log(articleId);
+  useEffect(() => {
+    async function getArticleDetail() {
+      const res = await getArticleDetailAPI(articleId);
+      form.setFieldsValue(res.data);
+    }
+    getArticleDetail();
+  }, [articleId, form]);
+
   return (
     <div className="publish">
       <Card
@@ -70,6 +85,7 @@ const Publish = () => {
           wrapperCol={{ span: 16 }}
           initialValues={{ type: imageType }}
           onFinish={onFinish}
+          form={form}
         >
           <Form.Item
             label="标题"
