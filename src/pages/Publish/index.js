@@ -14,7 +14,11 @@ import { Link } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import "./index.scss";
-import { createArticleAPI, getArticleDetailAPI } from "@/apis/article";
+import {
+  createArticleAPI,
+  getArticleDetailAPI,
+  updateArticleAPI,
+} from "@/apis/article";
 import { useState, useEffect } from "react";
 import { message } from "antd";
 import { useChannel } from "@/hooks/useChannel";
@@ -38,11 +42,25 @@ const Publish = () => {
       content,
       cover: {
         type: imageType, //封面模式
-        images: imageList.map((item) => item.response.data.url), //封面列表
+        //这里的url处理逻辑只是在新增的时候的逻辑
+        //编辑的时候也需要做处理
+        images: imageList.map((item) => {
+          if (item.respone) {
+            return item.respone.data.url;
+          } else {
+            return item.url;
+          }
+        }), //封面列表
       },
       channel_id,
     };
-    await createArticleAPI(resData);
+    //调用不同的接口
+    if (articleId) {
+      //更新接口
+      await updateArticleAPI({ ...resData, id: articleId });
+    } else {
+      await createArticleAPI(resData);
+    }
   };
   //上传回调
   const [imageList, setImagesList] = useState([]);
@@ -88,7 +106,7 @@ const Publish = () => {
           <Breadcrumb
             items={[
               { title: <Link to={"/"}>首页</Link> },
-              { title: "发布文章" },
+              { title: `${articleId ? "编辑" : "新增"}文章` },
             ]}
           />
         }
